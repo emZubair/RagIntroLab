@@ -1,0 +1,50 @@
+# Generated index/data artifacts are not hand-edited source.
+exclude: '^(chunks\.json|history\.json|store\.npz|data/)'
+
+default_stages: [pre-commit]
+default_install_hook_types: [pre-commit, pre-push]
+
+default_language_version:
+  python: python3.14
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-json
+      - id: check-toml
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: check-builtin-literals
+      - id: check-case-conflict
+      - id: detect-private-key
+
+  # Ruff: lint (with autofix) + format on changed files at commit time.
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.18
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # Pre-push: lint + format-check the whole repo so nothing slips through
+  # the per-commit "diff only" net.
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.18
+    hooks:
+      - id: ruff
+        name: ruff (full repo, pre-push)
+        stages: [pre-push]
+        args: [--no-fix]
+        always_run: true
+        pass_filenames: false
+      - id: ruff-format
+        name: ruff-format (full repo, pre-push)
+        stages: [pre-push]
+        args: [--check]
+        always_run: true
+        pass_filenames: false

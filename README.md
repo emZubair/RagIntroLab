@@ -251,6 +251,22 @@ pip install -r requirements.txt   # or, explicitly: pip install pypdf numpy requ
 ollama list   # should show gemma4 and nomic-embed-text
 ```
 
+### Development tooling (optional)
+
+Contributors should install the dev dependencies and the git hooks. The hooks run **ruff** (lint +
+format) automatically, matching what CI checks (`.gitlab-ci.yml`):
+
+```bash
+pip install -r requirements-dev.txt   # ruff + pre-commit
+pre-commit install --install-hook-types pre-commit,pre-push
+#   or simply:  make hooks
+```
+
+- **pre-commit**: lints and formats the files you're about to commit (autofixes where possible).
+- **pre-push**: lints + format-checks the whole repo, so nothing slips through the per-commit net.
+
+Run them manually any time with `make lint` (or `pre-commit run --all-files`).
+
 ---
 
 ## 7. How to run it

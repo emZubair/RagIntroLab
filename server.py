@@ -19,6 +19,9 @@ import json
 import os
 
 from flask import Flask, jsonify, request, send_from_directory
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 import config
 from ask import build_prompt, generate_stream
@@ -28,6 +31,15 @@ HISTORY_FILE = "history.json"
 STORE_FILE = "store.npz"
 
 app = Flask(__name__, static_folder="static", static_url_path="")
+
+# Behind kamal-proxy/nginx, trust one layer of X-Forwarded-* headers so the
+# rate limiter sees the real client IP (not the proxy's).
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
+
+# Per-IP throttling for the /api/ask endpoint — caps abuse (and remote token
+# spend) on a public deployment. Default storage is in-memory (fine for a single
+# gunicorn worker); see DEPLOY.md to harden for multiple workers.
+limiter = Limiter(get_remote_address, app=app)
 
 # --- Load the vector store ONCE at startup (not on every request). ---
 # This is the whole point of the offline indexing phase: querying is cheap.
@@ -74,6 +86,7 @@ def index():
 
 
 @app.route("/api/ask", methods=["POST"])
+@limiter.limit(config.RATE_LIMIT)
 def api_ask():
     data = request.get_json(force=True)
     question = (data.get("question") or "").strip()

@@ -1,0 +1,48 @@
+name: Deploy
+
+# Deploys on every push to main. Requires a one-time `kamal setup` first
+# (see DEPLOY.md) — this workflow runs `kamal deploy` for subsequent releases.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}   # allow manual runs from the Actions tab
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+
+      - name: Install Kamal
+        run: gem install kamal -v "~> 2.0"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Add SSH key for the droplet
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "${{ secrets.DROPLET_IP }}" >> ~/.ssh/known_hosts
+
+      # .kamal/secrets is gitignored, so it isn't in the checkout — generate it
+      # here. The $VAR indirections are resolved from the deploy step's env below.
+      - name: Write .kamal/secrets
+        run: |
+          mkdir -p .kamal
+          printf '%s\n' \
+            'KAMAL_REGISTRY_PASSWORD=$KAMAL_REGISTRY_PASSWORD' \
+            'LLM_API_KEY=$LLM_API_KEY' \
+            > .kamal/secrets
+
+      - name: Deploy with Kamal
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: kamal deploy

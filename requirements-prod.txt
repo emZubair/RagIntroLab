@@ -1,0 +1,8 @@
+# Production dependencies — used by the Docker image (see Dockerfile).
+# Extends the base requirements with the WSGI server and the OpenAI SDK
+# (production uses LLM_PROVIDER=openai for generation).
+
+-r requirements.txt
+
+gunicorn==26.0.0       # production WSGI server (replaces Flask's dev server)
+openai==2.43.0         # remote generation provider in production
