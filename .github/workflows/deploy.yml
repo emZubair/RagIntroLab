@@ -8,6 +8,11 @@ on:
     branches: [main]
   workflow_dispatch: {}   # allow manual runs from the Actions tab
 
+# Let the built-in GITHUB_TOKEN push the image to GHCR.
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest

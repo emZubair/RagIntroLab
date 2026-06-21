@@ -85,6 +85,13 @@ def index():
     return send_from_directory(app.static_folder, "index.html")
 
 
+@app.route("/up")
+@limiter.exempt
+def up():
+    """Liveness probe for kamal-proxy (its default health check path)."""
+    return "OK", 200
+
+
 @app.route("/api/ask", methods=["POST"])
 @limiter.limit(config.RATE_LIMIT)
 def api_ask():
