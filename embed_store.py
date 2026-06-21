@@ -16,8 +16,10 @@ import json
 import numpy as np
 import requests
 
-OLLAMA_URL = "http://localhost:11434/api/embeddings"
-EMBED_MODEL = "nomic-embed-text"
+import config
+
+OLLAMA_URL = f"{config.OLLAMA_BASE_URL}/api/embeddings"
+EMBED_MODEL = config.EMBED_MODEL
 CHUNKS_FILE = "chunks.json"
 STORE_FILE = "store.npz"
 

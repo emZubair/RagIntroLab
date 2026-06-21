@@ -38,7 +38,12 @@ jobs:
           # trigger Net::SSH::HostKeyMismatch in kamal/SSHKit, which returns the
           # first salted match (e.g. ssh-rsa) instead of the ed25519 key the
           # droplet negotiates. See https://github.com/basecamp/kamal/issues/1814
-          ssh-keyscan "${{ secrets.DROPLET_IP }}" >> ~/.ssh/known_hosts
+          #
+          # Also pin the key type to ed25519: a plain `ssh-keyscan` writes ALL
+          # host key types (rsa/ecdsa/ed25519). Net::SSH then matches the first
+          # entry for the host (often ssh-rsa) instead of the ed25519 key the
+          # droplet actually presents, which also raises HostKeyMismatch.
+          ssh-keyscan -t ed25519 "${{ secrets.DROPLET_IP }}" >> ~/.ssh/known_hosts
 
       # .kamal/secrets is gitignored, so it isn't in the checkout — generate it
       # here. The $VAR indirections are resolved from the deploy step's env below.
