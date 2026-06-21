@@ -20,7 +20,7 @@ STORE  := store.npz
 
 .DEFAULT_GOAL := help
 
-.PHONY: help deps ingest embed index reindex ask retrieve serve clean
+.PHONY: help deps hooks lint ingest embed index reindex ask retrieve serve serve-prod clean
 
 help:                ## Show this help
 	@echo "RagIntroLab — available targets:"
@@ -38,6 +38,14 @@ help:                ## Show this help
 deps:                ## Install Python dependencies (from requirements.txt)
 	$(PYTHON) -m pip install --quiet -r requirements.txt
 	@echo "Dependencies installed."
+
+hooks:               ## Install dev deps + git pre-commit/pre-push hooks
+	$(PYTHON) -m pip install --quiet -r requirements-dev.txt
+	$(PYTHON) -m pre_commit install --install-hook-types pre-commit,pre-push
+	@echo "Git hooks installed (pre-commit, pre-push)."
+
+lint:                ## Run all pre-commit hooks against every file
+	$(PYTHON) -m pre_commit run --all-files
 
 ingest:              ## Load + chunk the PDF -> chunks.json   (PDF=<path>)
 	$(PYTHON) ingest.py "$(PDF)"
@@ -59,8 +67,11 @@ ask:                 ## Ask a question end-to-end   (Q="...")
 retrieve:            ## Show retrieved chunks only, no LLM   (Q="...")
 	$(PYTHON) retrieve.py "$(Q)"
 
-serve:               ## Start the web UI (default http://localhost:5000; override PORT=)
+serve:               ## Start the web UI dev server (default http://localhost:5000; override PORT=)
 	PORT=$(PORT) $(PYTHON) server.py
+
+serve-prod:          ## Start the web UI under gunicorn (production server, like the Docker image)
+	$(PYTHON) -m gunicorn --bind 0.0.0.0:8000 --workers 1 --threads 4 --timeout 120 server:app
 
 clean:               ## Delete the generated index (chunks.json, store.npz)
 	@rm -f $(CHUNKS) $(STORE)

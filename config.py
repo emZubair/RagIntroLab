@@ -32,6 +32,13 @@ OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434").rstrip(
 LOCAL_MODEL = os.getenv("LOCAL_MODEL", "gemma4")
 EMBED_MODEL = os.getenv("EMBED_MODEL", "nomic-embed-text")
 
+# --- Cost / abuse controls (mainly for a public deployment) ---
+# Cap the answer length so a remote provider can't run up large output bills.
+MAX_OUTPUT_TOKENS = int(os.getenv("MAX_OUTPUT_TOKENS", "512"))
+# Per-IP request limit for the web UI's /api/ask endpoint (Flask-Limiter syntax).
+# Generous by default for local use; tighten in production (e.g. "10 per hour").
+RATE_LIMIT = os.getenv("RATE_LIMIT", "240 per hour")
+
 # Default remote model per provider, used when LLM_MODEL is not set.
 _DEFAULT_REMOTE_MODEL = {
     "anthropic": "claude-opus-4-8",

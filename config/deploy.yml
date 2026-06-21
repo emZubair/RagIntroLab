@@ -1,0 +1,55 @@
+# Kamal deployment config for RagIntroLab.
+# Docs: https://kamal-deploy.org
+#
+# Replace every <PLACEHOLDER> before deploying. First-time setup and the full
+# walkthrough are in DEPLOY.md.
+
+service: lr-rag
+
+# Image name in the GitHub Container Registry (MUST be lowercase — GHCR/Docker
+# repository names cannot contain uppercase letters).
+image: emzubair/lr-rag
+
+# Your droplet's public IP. DNS for <YOUR_DOMAIN> must already point here.
+servers:
+  web:
+    - 204.48.18.99
+
+# kamal-proxy terminates TLS and provisions a Let's Encrypt cert for your domain.
+proxy:
+  ssl: true
+  host: rag-lab.impulsivesoft.com
+  app_port: 8000           # matches the gunicorn port in the Dockerfile
+
+# Push images to GHCR. Username is your GitHub handle; password is a token
+# (KAMAL_REGISTRY_PASSWORD) — in CI this is the built-in GITHUB_TOKEN.
+registry:
+  server: ghcr.io
+  username: emzubair
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+# Build for the droplet's architecture (DigitalOcean droplets are amd64).
+builder:
+  arch: amd64
+
+env:
+  clear:
+    LLM_PROVIDER: openai
+    LLM_MODEL: gpt-4o-mini          # cheapest sensible model; verify on OpenAI's pricing page
+    MAX_OUTPUT_TOKENS: "512"        # cap answer length -> caps output-token spend
+    RATE_LIMIT: "10 per hour"       # per-IP cap on /api/ask
+    # Point the app at the Ollama accessory (same Docker network) for embeddings.
+    OLLAMA_BASE_URL: http://lr-rag-ollama:11434
+  secret:
+    - LLM_API_KEY                   # your OpenAI API key (from .kamal/secrets)
+
+# Ollama runs as an accessory purely to serve query-time embeddings
+# (nomic-embed-text). Pull the model once after the first deploy — see DEPLOY.md.
+accessories:
+  ollama:
+    image: ollama/ollama
+    host: 204.48.18.99
+    port: "11434"
+    volumes:
+      - ollama_data:/root/.ollama   # persists the pulled embedding model

@@ -1,0 +1,12 @@
+.git
+.github
+.venv
+__pycache__
+*.pyc
+.env
+history.json
+DEPLOY.md
+README.md
+*.md
+.kamal/secrets
+# Keep store.npz, data/, static/, *.py, requirements*.txt in the image.

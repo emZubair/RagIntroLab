@@ -272,6 +272,13 @@ tags
 # Redis dump file
 dump.rdb
 
+### RagIntroLab
+# Local secrets & runtime state — never commit
+.kamal/secrets
+history.json
+# NOTE: store.npz and chunks.json ARE committed on purpose — the production
+# Docker image bakes in the prebuilt index (see Dockerfile / DEPLOY.md).
+
 ### Project template
 rover/media/
 

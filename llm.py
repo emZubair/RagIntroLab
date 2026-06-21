@@ -44,7 +44,7 @@ def _anthropic_stream(prompt):
     client = anthropic.Anthropic(api_key=config.API_KEY)
     with client.messages.stream(
         model=config.remote_model(),
-        max_tokens=2048,
+        max_tokens=config.MAX_OUTPUT_TOKENS,
         messages=[{"role": "user", "content": prompt}],
     ) as stream:
         yield from stream.text_stream
@@ -58,6 +58,7 @@ def _openai_stream(prompt):
     stream = client.chat.completions.create(
         model=config.remote_model(),
         messages=[{"role": "user", "content": prompt}],
+        max_tokens=config.MAX_OUTPUT_TOKENS,
         stream=True,
     )
     for chunk in stream:
