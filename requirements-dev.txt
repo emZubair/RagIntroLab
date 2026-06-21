@@ -1,0 +1,4 @@
+# RagIntroLab — development / CI dependencies
+# Install with:  pip install -r requirements-dev.txt
+
+ruff==0.15.18   # linter + formatter, run in CI (.gitlab-ci.yml)

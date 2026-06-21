@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RagIntroLab</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --panel: #1a2027;
+      --panel-2: #222c36;
+      --border: #2c3a47;
+      --text: #e6edf3;
+      --muted: #8b98a5;
+      --accent: #4f9cf9;
+      --accent-dim: #2d4a6b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+    header h1 { font-size: 20px; margin: 0; }
+    header span { color: var(--muted); font-size: 13px; }
+    .layout { flex: 1; display: flex; min-height: 0; }
+
+    /* Sidebar / history */
+    aside {
+      width: 300px;
+      border-right: 1px solid var(--border);
+      background: var(--panel);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    aside .head {
+      padding: 14px 16px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #history { overflow-y: auto; flex: 1; }
+    .hist-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .hist-item:hover { background: var(--panel-2); }
+    .hist-item .q { font-size: 14px; margin-bottom: 4px; }
+    .hist-item .meta { font-size: 11px; color: var(--muted); }
+    .empty { padding: 16px; color: var(--muted); font-size: 13px; }
+
+    /* Main */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      min-height: 0;
+      overflow-y: auto;
+    }
+    .ask-box { display: flex; gap: 10px; margin-bottom: 20px; }
+    textarea {
+      flex: 1;
+      resize: vertical;
+      min-height: 52px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      font-size: 15px;
+      font-family: inherit;
+    }
+    textarea:focus { outline: none; border-color: var(--accent); }
+    button {
+      padding: 0 22px;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent);
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:disabled { background: var(--accent-dim); cursor: not-allowed; }
+
+    .answer-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      max-width: 820px;
+    }
+    .answer-card .q {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 14px;
+      color: var(--accent);
+    }
+    .answer-card .a { font-size: 15px; line-height: 1.6; white-space: pre-wrap; }
+    .pages {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .pages b { color: var(--text); }
+    .placeholder { color: var(--muted); font-size: 15px; }
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid var(--muted);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>RagIntroLab</h1>
+    <span>Ask questions about the indexed document &mdash; answers are grounded in the source with page citations.</span>
+  </header>
+
+  <div class="layout">
+    <aside>
+      <div class="head">
+        <span>History</span>
+        <span id="hist-count"></span>
+      </div>
+      <div id="history"><div class="empty">No questions yet.</div></div>
+    </aside>
+
+    <main>
+      <div class="ask-box">
+        <textarea id="question" placeholder="e.g. How is the President of Pakistan elected?"
+                  onkeydown="if(event.key==='Enter'&&(event.metaKey||event.ctrlKey))ask()"></textarea>
+        <button id="ask-btn" onclick="ask()">Ask</button>
+      </div>
+      <div id="result">
+        <div class="placeholder">Ask a question to get started. (Cmd/Ctrl + Enter also submits.)</div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const resultEl = document.getElementById("result");
+    const historyEl = document.getElementById("history");
+    const askBtn = document.getElementById("ask-btn");
+    const questionEl = document.getElementById("question");
+
+    // Render one Q&A into the main panel.
+    function showAnswer(entry) {
+      const pages = (entry.pages && entry.pages.length)
+        ? entry.pages.join(", ") : "none";
+      resultEl.innerHTML = `
+        <div class="answer-card">
+          <div class="q">${escapeHtml(entry.question)}</div>
+          <div class="a">${escapeHtml(entry.answer)}</div>
+          <div class="pages">Sourced from <b>page(s): ${pages}</b>
+            ${entry.timestamp ? " &middot; " + entry.timestamp : ""}</div>
+        </div>`;
+    }
+
+    async function ask() {
+      const question = questionEl.value.trim();
+      if (!question) return;
+      askBtn.disabled = true;
+      resultEl.innerHTML = `<div class="placeholder"><span class="spinner"></span>Retrieving and generating…</div>`;
+      try {
+        const resp = await fetch("/api/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question })
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || "Request failed");
+        showAnswer(data);
+        questionEl.value = "";
+        loadHistory();
+      } catch (err) {
+        resultEl.innerHTML = `<div class="placeholder">Error: ${escapeHtml(err.message)}</div>`;
+      } finally {
+        askBtn.disabled = false;
+      }
+    }
+
+    async function loadHistory() {
+      const resp = await fetch("/api/history");
+      const items = await resp.json();
+      document.getElementById("hist-count").textContent = items.length || "";
+      if (!items.length) {
+        historyEl.innerHTML = `<div class="empty">No questions yet.</div>`;
+        return;
+      }
+      historyEl.innerHTML = items.map((it, i) => `
+        <div class="hist-item" data-idx="${i}">
+          <div class="q">${escapeHtml(it.question)}</div>
+          <div class="meta">${it.timestamp || ""} &middot; p. ${(it.pages||[]).join(", ") || "—"}</div>
+        </div>`).join("");
+      // Clicking a past question re-displays its stored answer.
+      historyEl.querySelectorAll(".hist-item").forEach(el => {
+        el.onclick = () => showAnswer(items[parseInt(el.dataset.idx)]);
+      });
+    }
+
+    function escapeHtml(s) {
+      return (s || "").replace(/[&<>"']/g, c =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    loadHistory();
+  </script>
+</body>
+</html>

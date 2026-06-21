@@ -1,0 +1,17 @@
+# Ruff configuration for RagIntroLab.
+# Docs: https://docs.astral.sh/ruff/
+
+line-length = 100
+
+# Don't lint generated artifacts or virtual environments.
+extend-exclude = [
+    ".venv",
+    "__pycache__",
+    "data",
+]
+
+[lint]
+# A pragmatic default rule set:
+#   E/W  pycodestyle      F  pyflakes        I  isort (import order)
+#   UP   pyupgrade        B  bugbear         C4 comprehensions
+select = ["E", "W", "F", "I", "UP", "B", "C4"]

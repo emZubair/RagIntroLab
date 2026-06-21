@@ -1,0 +1,34 @@
+# RagIntroLab — GitLab CI/CD
+#
+# Runs Python linting (ruff) in two situations:
+#   1. On every merge request, so problems are caught before review.
+#   2. On a weekly schedule (intended for 2 AM), as a recurring health check.
+#
+# NOTE: the schedule itself is NOT defined here. Cron schedules live in the
+# GitLab UI:  Build > Pipeline schedules > New schedule
+#   Interval pattern (custom):  0 2 * * 0   (02:00 every Sunday, UTC)
+# The `rules` below make this pipeline run when that schedule fires.
+
+stages:
+  - lint
+
+# Lint Python sources with ruff (check + format verification).
+lint:
+  stage: lint
+  image: python:3.14-slim
+  variables:
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  cache:
+    key: "$CI_JOB_NAME"
+    paths:
+      - .cache/pip
+  before_script:
+    - pip install --quiet -r requirements-dev.txt
+  script:
+    - ruff check .
+    - ruff format --check .
+  rules:
+    # Trigger on newly created / updated merge requests.
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    # Trigger on the weekly scheduled pipeline.
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'

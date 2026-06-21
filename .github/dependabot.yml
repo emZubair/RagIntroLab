@@ -1,0 +1,19 @@
+# Config for Dependabot updates. See Documentation here:
+# https://help.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+
+version: 2
+updates:
+  # Update GitHub actions in workflows
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    # Once a month
+    schedule:
+      interval: 'monthly'
+
+  # Enable version updates for Python/Pip
+  - package-ecosystem: 'pip'
+    # Look for requirements files (requirements.txt, requirements-dev.txt) in the root directory
+    directory: '/'
+    # Once a month
+    schedule:
+      interval: 'monthly'

@@ -1,0 +1,15 @@
+# RagIntroLab — Python dependencies (pinned)
+# Install with:  pip install -r requirements.txt
+
+pypdf==6.13.3          # PDF loading / text extraction (ingest.py)
+cryptography==49.0.0   # required by pypdf to read the encrypted sample PDF
+numpy==2.4.6           # vector store + cosine similarity (embed_store.py, retrieve.py)
+requests==2.34.2       # HTTP calls to the local Ollama API
+Flask==3.1.3           # web UI server (server.py)
+python-dotenv==1.2.2   # loads .env for the local/remote generation switch (config.py)
+
+# --- Optional: only needed when using a REMOTE generation provider (see .env) ---
+# Install just the one you use; they are imported lazily, so a local-only setup
+# does not need either.
+#   pip install anthropic   # for LLM_PROVIDER=anthropic (Claude)
+#   pip install openai      # for LLM_PROVIDER=openai  (GPT/Codex)
