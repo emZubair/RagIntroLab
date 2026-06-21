@@ -1,5 +1,7 @@
 # RagIntroLab
 
+[![Quality Checks](https://github.com/emZubair/RagIntroLab/actions/workflows/quality.yml/badge.svg)](https://github.com/emZubair/RagIntroLab/actions/workflows/quality.yml)
+
 A **local-first Retrieval-Augmented Generation (RAG) system** that answers natural-language
 questions about your own documents — grounded in the source text, with **page-level citations**
 on every answer.
