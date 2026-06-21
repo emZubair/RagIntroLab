@@ -49,5 +49,5 @@ jobs:
       - name: Deploy with Kamal
         env:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
-          KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
         run: kamal deploy
