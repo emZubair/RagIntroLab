@@ -42,7 +42,7 @@ RATE_LIMIT = os.getenv("RATE_LIMIT", "240 per hour")
 # Default remote model per provider, used when LLM_MODEL is not set.
 _DEFAULT_REMOTE_MODEL = {
     "anthropic": "claude-opus-4-8",
-    "openai": "gpt-4o",
+    "openai": "gpt-4o-mini",
 }
 
 
