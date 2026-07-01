@@ -5,4 +5,4 @@
 -r requirements.txt
 
 gunicorn==26.0.0       # production WSGI server (replaces Flask's dev server)
-openai==2.43.0         # remote generation provider in production
+openai==2.44.0         # remote generation provider in production
