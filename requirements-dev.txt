@@ -1,5 +1,5 @@
 # RagIntroLab — development / CI dependencies
 # Install with:  pip install -r requirements-dev.txt
 
-ruff==0.15.18         # linter + formatter, run in CI (.gitlab-ci.yml)
+ruff==0.15.20         # linter + formatter, run in CI (.gitlab-ci.yml)
 pre-commit==4.6.0     # git pre-commit / pre-push hooks (.pre-commit-config.yaml)
