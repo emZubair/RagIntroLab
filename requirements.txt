@@ -1,7 +1,7 @@
 # RagIntroLab — Python dependencies (pinned)
 # Install with:  pip install -r requirements.txt
 
-pypdf==6.13.3          # PDF loading / text extraction (ingest.py)
+pypdf==6.14.2          # PDF loading / text extraction (ingest.py)
 cryptography==49.0.0   # required by pypdf to read the encrypted sample PDF
 numpy==2.4.6           # vector store + cosine similarity (embed_store.py, retrieve.py)
 requests==2.34.2       # HTTP calls to the local Ollama API
